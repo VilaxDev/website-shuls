@@ -22,5 +22,5 @@ node_modules/
 .netlify.toml.bak
 
 # Archivos de documentación
-README.md
 *.md
+!README.md
