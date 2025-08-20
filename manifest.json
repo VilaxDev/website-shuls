@@ -9,20 +9,10 @@
   "orientation": "landscape",
   "scope": "/",
   "lang": "es",
-  "icons": [
-    {
-      "src": "./images/favicon/icon.png",
-      "sizes": "any",
-      "type": "image/png"
-    }
+  "icons": [],
+  "categories": [
+    "games",
+    "entertainment"
   ],
-  "categories": ["games", "entertainment"],
-  "screenshots": [
-    {
-      "src": "./images/favicon/icon.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
-  ]
+  "screenshots": []
 }
