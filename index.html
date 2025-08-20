@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <link rel="icon" href="./images/favicon/icon.png" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shuls: Batalla en Mazamari</title>
+    <title>Shuls - Batalla en Mazamari</title>
     <meta name="description"
         content="Acompaña a Shuls en la Batalla en Mazamari. Salta, ataca y derrota enemigos en esta aventura llena de acción y diversión.">
-    
+
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#4CAF50">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,16 +16,16 @@
     <meta name="apple-mobile-web-app-title" content="Shuls">
     <meta name="msapplication-TileColor" content="#4CAF50">
     <meta name="msapplication-config" content="none">
-    
+
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json">
-    
+
     <!-- Apple Touch Icons -->
     <link rel="apple-touch-icon" href="./images/favicon/icon.png">
     <link rel="apple-touch-icon" sizes="152x152" href="./images/favicon/icon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="./images/favicon/icon.png">
     <link rel="apple-touch-icon" sizes="167x167" href="./images/favicon/icon.png">
-    
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
@@ -799,7 +799,7 @@
         // Initialize game when page loads
         document.addEventListener('DOMContentLoaded', () => {
             new ShulsPlatformer();
-            
+
             // Registrar Service Worker para PWA
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
@@ -812,7 +812,7 @@
                         });
                 });
             }
-            
+
             // Mostrar banner de instalación
             let deferredPrompt;
             const installButton = document.createElement('button');
@@ -828,14 +828,14 @@
                 border-radius: 25px;
                 box-shadow: 0 4px 8px rgba(0,0,0,0.3);
             `;
-            
+
             document.body.appendChild(installButton);
-            
+
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
                 installButton.style.display = 'block';
-                
+
                 installButton.addEventListener('click', () => {
                     installButton.style.display = 'none';
                     deferredPrompt.prompt();
@@ -849,7 +849,7 @@
                     });
                 });
             });
-            
+
             window.addEventListener('appinstalled', () => {
                 installButton.style.display = 'none';
                 deferredPrompt = null;

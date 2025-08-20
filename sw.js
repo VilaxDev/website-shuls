@@ -27,10 +27,6 @@ const urlsToCache = [
   '/images/personajes/yuliana/yuliana-4.png'
 ];
 
-// Versión del cache para Netlify
-const CACHE_VERSION = 'v1.1';
-const CACHE_NAME = `shuls-game-${CACHE_VERSION}`;
-
 // Instalación del Service Worker
 self.addEventListener('install', (event) => {
   event.waitUntil(

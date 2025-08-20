@@ -21,10 +21,6 @@ node_modules/
 .netlify/
 .netlify.toml.bak
 
-# Archivos de configuración del servidor (no necesarios para Netlify)
-.htaccess
-nginx-pwa.conf
-
 # Archivos de documentación
 README.md
 *.md
