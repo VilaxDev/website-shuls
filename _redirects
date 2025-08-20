@@ -1,0 +1,19 @@
+# Netlify redirects para PWA
+# Redirigir todas las rutas a index.html para SPA
+/*    /index.html   200
+
+# Headers para PWA
+/sw.js
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/manifest.json
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json
+
+# Headers de seguridad para PWA
+/*
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

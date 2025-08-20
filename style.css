@@ -1,0 +1,583 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #8fbc8f 100%);
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    overflow: hidden;
+}
+
+.game-canvas {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(180deg, #87CEEB 0%, #98FB98 50%, #228B22 100%);
+    overflow: hidden;
+}
+
+.clouds {
+    position: absolute;
+    width: 100%;
+    height: 200px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200"><ellipse cx="150" cy="100" rx="80" ry="40" fill="white" opacity="0.8"/><ellipse cx="400" cy="80" rx="100" ry="50" fill="white" opacity="0.7"/><ellipse cx="650" cy="120" rx="90" ry="45" fill="white" opacity="0.6"/></svg>') repeat-x;
+    animation: cloudsMove 20s linear infinite;
+    z-index: 1;
+}
+
+@keyframes cloudsMove {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-800px);
+    }
+}
+
+.ground {
+    position: absolute;
+    bottom: 0;
+    width: 200%;
+    height: 80px;
+    background: linear-gradient(180deg, #8B4513 0%, #654321 100%);
+    z-index: 2;
+}
+
+.platforms {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+}
+
+.platform {
+    position: absolute;
+    background: linear-gradient(180deg, #4B8B3B 0%, #2E5B1E 100%);
+    border: 2px solid #228B22;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.player {
+    position: absolute;
+    bottom: 80px;
+    left: 100px;
+    width: 64px;
+    height: 84px;
+    background-image: url('./images/personajes/shuls/shuls-1.png');
+    background-size: cover;
+    z-index: 10;
+}
+
+.player.jumping {
+    animation: jump 0.6s ease-out;
+}
+
+@keyframes jump {
+    0% {
+        transform: translateY(0) scaleY(1);
+    }
+
+    50% {
+        transform: translateY(-100px) scaleY(1.1) scaleX(0.9);
+    }
+
+    100% {
+        transform: translateY(0) scaleY(1);
+    }
+}
+
+.player.attacking {
+    animation: attack 0.3s ease-out;
+}
+
+@keyframes attack {
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    50% {
+        transform: scale(1.2) rotate(10deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+.enemy {
+    position: absolute;
+    width: 45px;
+    height: 80px;
+    z-index: 9;
+    transition: all 0.2s ease;
+    background-size: cover;
+    background-position: center;
+}
+
+.enemy.alcalde {
+    animation: patrol 4s linear infinite;
+}
+
+.enemy.pierna {
+    animation: fastPatrol 2s linear infinite;
+}
+
+.enemy.koba {
+    animation: slowPatrol 6s linear infinite;
+}
+
+.enemy.vaquita {
+    animation: jumpPatrol 3s ease-in-out infinite;
+}
+
+.enemy.defeated {
+    animation: defeat 0.5s ease-out forwards;
+}
+
+.enemy.attacking {
+    animation: enemyAttack 0.4s ease-out;
+}
+
+@keyframes patrol {
+
+    0%,
+    100% {
+        transform: translateX(0) scaleX(1);
+    }
+
+    50% {
+        transform: translateX(150px) scaleX(-1);
+    }
+}
+
+@keyframes fastPatrol {
+
+    0%,
+    100% {
+        transform: translateX(0) scaleX(1);
+    }
+
+    50% {
+        transform: translateX(200px) scaleX(-1);
+    }
+}
+
+@keyframes slowPatrol {
+
+    0%,
+    100% {
+        transform: translateX(0) scaleX(1);
+    }
+
+    50% {
+        transform: translateX(100px) scaleX(-1);
+    }
+}
+
+@keyframes jumpPatrol {
+
+    0%,
+    100% {
+        transform: translateY(0) translateX(0) scaleX(1);
+    }
+
+    25% {
+        transform: translateY(-30px) translateX(50px) scaleX(1);
+    }
+
+    50% {
+        transform: translateY(0) translateX(100px) scaleX(-1);
+    }
+
+    75% {
+        transform: translateY(-30px) translateX(50px) scaleX(-1);
+    }
+}
+
+@keyframes defeat {
+    0% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(0.3) rotate(360deg) translateY(-50px);
+    }
+}
+
+@keyframes enemyAttack {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3) rotate(15deg);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.hud {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    z-index: 100;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 15px;
+    padding: 15px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.hud-item {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.health-bar,
+.energy-bar {
+    width: 100px;
+    height: 15px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    margin-left: 10px;
+    overflow: hidden;
+}
+
+.health-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2ed573, #7bed9f);
+    transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+.energy-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ff4757, #ff6b35);
+    transition: width 0.5s ease;
+    border-radius: 8px;
+}
+
+.controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    gap: 15px;
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.move-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+}
+
+.jump-btn {
+    background: linear-gradient(45deg, #00d2ff, #3a7bd5);
+}
+
+.attack-btn {
+    background: linear-gradient(45deg, #ff4757, #ff3838);
+}
+
+.control-btn:hover {
+    transform: scale(1.1);
+}
+
+.control-btn:active {
+    transform: scale(0.95);
+}
+
+.wuaaa-effect {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 71, 87, 0.8) 0%, rgba(255, 71, 87, 0) 100%);
+    z-index: 8;
+    animation: wuaaaBlast 1s ease-out forwards;
+    pointer-events: none;
+}
+
+
+@keyframes wuaaaBlast {
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(3);
+        opacity: 0;
+    }
+}
+
+.level-complete {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    z-index: 1000;
+    font-size: 1.5rem;
+}
+
+.floating-damage {
+    position: absolute;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #ff4757;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+    animation: floatDamage 1.5s ease-out forwards;
+    pointer-events: none;
+    z-index: 11;
+}
+
+@keyframes floatDamage {
+    0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-40px) scale(1.2);
+    }
+}
+
+
+.controls-info {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 30px;
+    border-radius: 20px;
+    text-align: center;
+    z-index: 1500;
+    font-size: 1.1rem;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    animation: controlsFadeInOut 5s ease-in-out forwards;
+    border: 2px solid #4a7c59;
+}
+
+.controls-info h3 {
+    color: #7bed9f;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+}
+
+.controls-info .control-section {
+    margin: 15px 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.controls-info .keyboard-controls,
+.controls-info .mobile-controls {
+    display: inline-block;
+    margin: 10px 15px;
+    vertical-align: top;
+}
+
+.controls-info .control-key {
+    display: inline-block;
+    background: #667eea;
+    color: white;
+    padding: 8px 12px;
+    margin: 3px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-family: monospace;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+    .controls-info {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.95);
+        color: white;
+        padding: 30px;
+        border-radius: 20px;
+        text-align: center;
+        z-index: 1500;
+        font-size: 1.1rem;
+        max-width: 800px;
+        /* antes estaba en 500px */
+        width: 90%;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        animation: controlsFadeInOut 5s ease-in-out forwards;
+        border: 2px solid #4a7c59;
+    }
+
+    .hud {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+
+    .hud-item {
+        font-size: 0.9rem;
+        margin: 2px;
+    }
+
+    .health-bar,
+    .energy-bar {
+        width: 80px;
+        height: 12px;
+    }
+}
+
+.level-info {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 1000;
+    font-size: 1.2rem;
+    animation: fadeInOut 3s ease-in-out forwards;
+}
+
+@keyframes fadeInOut {
+
+    0%,
+    100% {
+        opacity: 0;
+    }
+
+    20%,
+    80% {
+        opacity: 1;
+    }
+}
+
+
+/* Botón flotante */
+.btn-flotante {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #f03e85d6;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    width: 100px;
+    height: 48px;
+    font-size: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: 0.3s;
+    z-index: 1000;
+}
+
+.btn-flotante:hover {
+    background: #0056b3;
+    transform: scale(1.1);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    /* Oculto al inicio */
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    /* Fondo semi-transparente */
+    justify-content: center;
+    align-items: center;
+}
+
+/* Contenido del modal */
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 280px;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    animation: aparecer 0.3s ease;
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+.modal-content p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+/* Botón de cerrar (X) */
+.cerrar {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 22px;
+    color: #333;
+    cursor: pointer;
+}
+
+/* Animación */
+@keyframes aparecer {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}

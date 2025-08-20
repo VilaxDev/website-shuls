@@ -1,0 +1,35 @@
+{
+  "name": "Shuls: Batalla en Mazamari",
+  "short_name": "Shuls",
+  "description": "Acompaña a Shuls en la Batalla en Mazamari. Salta, ataca y derrota enemigos en esta aventura llena de acción y diversión.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#4CAF50",
+  "theme_color": "#4CAF50",
+  "orientation": "landscape",
+  "scope": "/",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "./images/favicon/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./images/favicon/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "screenshots": [
+    {
+      "src": "./images/favicon/icon.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ]
+}

@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="./images/favicon/icon.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shuls: Batalla en Mazamari</title>
+    <meta name="description"
+        content="Acompaña a Shuls en la Batalla en Mazamari. Salta, ataca y derrota enemigos en esta aventura llena de acción y diversión.">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Shuls">
+    <meta name="msapplication-TileColor" content="#4CAF50">
+    <meta name="msapplication-config" content="none">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="./images/favicon/icon.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="./images/favicon/icon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="./images/favicon/icon.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="./images/favicon/icon.png">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="game-canvas" id="gameCanvas">
+        <!-- Background Elements -->
+        <div class="clouds"></div>
+
+        <!-- Platforms -->
+        <div class="platforms" id="platforms"></div>
+
+        <!-- Ground -->
+        <div class="ground"></div>
+
+        <!-- Player -->
+        <div class="player" id="player"></div>
+
+        <!-- Enemies Container -->
+        <div id="enemies"></div>
+    </div>
+
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-item">
+            <span>❤️ Vida:</span>
+            <div class="health-bar">
+                <div class="health-fill" id="healthFill" style="width: 100%"></div>
+            </div>
+        </div>
+        <div class="hud-item">
+            <span>⚡ Energía:</span>
+            <div class="energy-bar">
+                <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+            </div>
+        </div>
+        <div class="hud-item">
+            <span>🏆 Nivel: <span id="levelDisplay">1</span></span>
+        </div>
+        <div class="hud-item">
+            <span>💰 Puntos: <span id="scoreDisplay">0</span></span>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="control-btn move-btn" id="leftBtn"><i class='bx bxs-left-arrow'></i></button>
+        <button class="control-btn jump-btn" id="jumpBtn"><i class='bx bxs-up-arrow'></i></button>
+        <button class="control-btn move-btn" id="rightBtn"><i class='bx bxs-right-arrow'></i></button>
+        <button class="control-btn attack-btn" id="attackBtn">⚡</button>
+    </div>
+
+    <script>
+        class ShulsPlatformer {
+            constructor() {
+                this.canvas = document.getElementById('gameCanvas');
+                this.player = document.getElementById('player');
+                this.enemiesContainer = document.getElementById('enemies');
+                this.platformsContainer = document.getElementById('platforms');
+
+                // Game state
+                this.level = 1;
+                this.score = 0;
+                this.health = 100;
+                this.maxHealth = 100;
+                this.energy = 100;
+                this.maxEnergy = 100;
+
+                // Player state
+                this.playerX = 100;
+                this.playerY = 0;
+                this.playerVelocityX = 0;
+                this.playerVelocityY = 0;
+                this.isJumping = false;
+                this.isOnGround = true;
+                this.facingRight = true;
+
+                // Physics
+                this.gravity = 0.8;
+                this.jumpPower = -15;
+                this.moveSpeed = 5;
+                this.groundLevel = 80;
+
+                // Game objects
+                this.enemies = [];
+                this.platforms = [];
+                this.keys = {};
+
+                // Animation frames personaje - shuls
+                this.runFrames = [
+                    './images/personajes/shuls/shuls-1.png',
+                    './images/personajes/shuls/shuls-2.png',
+                    './images/personajes/shuls/shuls-3.png',
+                    './images/personajes/shuls/shuls-4.png',
+                ];
+                this.currentFrame = 0;
+                this.frameInterval = 100;
+                this.lastFrameTime = 0;
+
+                // Animation frames para enemigos
+                this.enemyFrames = {
+                    alcalde: [
+                        './images/personajes/alcalde/vidal-1.png',
+                        './images/personajes/alcalde/vidal-2.png',
+                        './images/personajes/alcalde/vidal-3.png',
+                        './images/personajes/alcalde/vidal-4.png'
+                    ],
+                    pierna: [
+                        './images/personajes/pierna/pierna-oro-1.png',
+                        './images/personajes/pierna/pierna-oro-2.png',
+                        './images/personajes/pierna/pierna-oro-3.png',
+                        './images/personajes/pierna/pierna-oro-4.png'
+                    ],
+                    koba: [
+                        './images/personajes/koba/koba-1.png',
+                        './images/personajes/koba/koba-2.png',
+                        './images/personajes/koba/koba-3.png',
+                        './images/personajes/koba/koba-4.png'
+                    ],
+                    vaquita: [
+                        './images/personajes/yuliana/yuliana-1.png',
+                        './images/personajes/yuliana/yuliana-2.png',
+                        './images/personajes/yuliana/yuliana-3.png',
+                        './images/personajes/yuliana/yuliana-4.png'
+                    ]
+                };
+
+                // Frames de ataque para enemigos
+                this.enemyAttackFrames = {
+                    alcalde: [
+                        './images/personajes/alcalde/vidal-1.png',
+                        './images/personajes/alcalde/vidal-2.png',
+                        './images/personajes/alcalde/vidal-3.png',
+                        './images/personajes/alcalde/vidal-4.png'
+                    ],
+                    pierna: [
+                        './images/personajes/pierna/pierna-oro-1.png',
+                        './images/personajes/pierna/pierna-oro-2.png',
+                        './images/personajes/pierna/pierna-oro-3.png',
+                        './images/personajes/pierna/pierna-oro-4.png'
+                    ],
+                    koba: [
+                        './images/personajes/koba/koba-1.png',
+                        './images/personajes/koba/koba-2.png',
+                        './images/personajes/koba/koba-3.png',
+                        './images/personajes/koba/koba-4.png'
+                    ],
+                    vaquita: [
+                        './images/personajes/yuliana/yuliana-1.png',
+                        './images/personajes/yuliana/yuliana-2.png',
+                        './images/personajes/yuliana/yuliana-3.png',
+                        './images/personajes/yuliana/yuliana-4.png'
+                    ]
+                };
+
+                // Level definitions
+                this.levelData = [
+                    {
+                        enemies: [
+                            { type: 'alcalde', x: 300, y: 0, hp: 3 },
+                            { type: 'pierna', x: 600, y: 0, hp: 2 }
+                        ],
+                        platforms: [
+                            { x: 250, y: 300, width: 150, height: 20 },
+                            { x: 500, y: 200, width: 120, height: 20 }
+                        ]
+                    },
+                    {
+                        enemies: [
+                            { type: 'koba', x: 400, y: 0, hp: 4 },
+                            { type: 'vaquita', x: 700, y: 0, hp: 3 },
+                            { type: 'alcalde', x: 200, y: 0, hp: 3 }
+                        ],
+                        platforms: [
+                            { x: 200, y: 350, width: 100, height: 20 },
+                            { x: 400, y: 250, width: 120, height: 20 },
+                            { x: 650, y: 150, width: 100, height: 20 }
+                        ]
+                    },
+                    {
+                        enemies: [
+                            { type: 'pierna', x: 300, y: 0, hp: 3 },
+                            { type: 'koba', x: 500, y: 0, hp: 4 },
+                            { type: 'vaquita', x: 750, y: 0, hp: 3 },
+                            { type: 'alcalde', x: 150, y: 0, hp: 4 }
+                        ],
+                        platforms: [
+                            { x: 150, y: 400, width: 80, height: 20 },
+                            { x: 300, y: 300, width: 100, height: 20 },
+                            { x: 500, y: 200, width: 120, height: 20 },
+                            { x: 700, y: 350, width: 90, height: 20 }
+                        ]
+                    }
+                ];
+
+                this.init();
+            }
+
+            init() {
+                this.bindEvents();
+                this.showControlsInfo(); // Mostrar controles primero
+                setTimeout(() => {
+                    this.loadLevel();
+                    this.gameLoop();
+                    this.showLevelInfo();
+                }, 5500); // Esperar a que termine la animación de controles
+            }
+
+            showControlsInfo() {
+                const controlsInfo = document.createElement('div');
+                controlsInfo.className = 'controls-info';
+
+                // Detectar si el dispositivo tiene pantalla táctil
+                const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+
+                let controlsContent = `
+        <h3>🎮 ¿Cómo jugar como Shuls? 🎮</h3>
+    `;
+
+                if (!isMobile) {
+                    // Controles para PC
+                    controlsContent += `
+            <div class="control-section">
+                <h4>🖥️ Controles de Teclado:</h4>
+                <div class="keyboard-controls">
+                    <div>Mover: <span class="control-key">←</span> <span class="control-key">→</span> o <span class="control-key">A</span> <span class="control-key">D</span></div>
+                    <div>Saltar: <span class="control-key">Espacio</span></div>
+                    <div>Atacar: <span class="control-key">Enter</span> o <span class="control-key">X</span></div>
+                </div>
+            </div>
+        `;
+                } else {
+                    // Controles para móvil
+                    controlsContent += `
+            <div class="control-section">
+                <h4>📱 Controles Táctiles:</h4>
+                <div class="mobile-controls">
+                    <div>Usa los botones en pantalla</div>
+                    <div>← → ↑ ⚡</div>
+                </div>
+            </div>
+        `;
+                }
+
+                controlsContent += `
+        <p><strong>¡Derrota a todos los enemigos gritando "WUAAA!"</strong></p>
+    `;
+
+                controlsInfo.innerHTML = controlsContent;
+                document.body.appendChild(controlsInfo);
+
+                // Ocultar después de 5 segundos
+                setTimeout(() => {
+                    if (document.body.contains(controlsInfo)) {
+                        document.body.removeChild(controlsInfo);
+                    }
+                }, 5000);
+            }
+
+            bindEvents() {
+                // Touch controls
+                document.getElementById('leftBtn').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.keys['ArrowLeft'] = true;
+                });
+                document.getElementById('leftBtn').addEventListener('touchend', () => {
+                    this.keys['ArrowLeft'] = false;
+                });
+
+                document.getElementById('rightBtn').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.keys['ArrowRight'] = true;
+                });
+                document.getElementById('rightBtn').addEventListener('touchend', () => {
+                    this.keys['ArrowRight'] = false;
+                });
+
+                document.getElementById('jumpBtn').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.jump();
+                });
+
+                document.getElementById('attackBtn').addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.attack();
+                });
+
+                // Click controls for desktop
+                document.getElementById('leftBtn').addEventListener('mousedown', () => {
+                    this.keys['ArrowLeft'] = true;
+                });
+                document.getElementById('leftBtn').addEventListener('mouseup', () => {
+                    this.keys['ArrowLeft'] = false;
+                });
+
+                document.getElementById('rightBtn').addEventListener('mousedown', () => {
+                    this.keys['ArrowRight'] = true;
+                });
+                document.getElementById('rightBtn').addEventListener('mouseup', () => {
+                    this.keys['ArrowRight'] = false;
+                });
+
+                document.getElementById('jumpBtn').addEventListener('click', () => this.jump());
+                document.getElementById('attackBtn').addEventListener('click', () => this.attack());
+
+                // Keyboard controls
+                window.addEventListener('keydown', (e) => {
+                    this.keys[e.code] = true;
+                    if (e.code === 'Space') {
+                        e.preventDefault();
+                        this.jump();
+                    }
+                    if (e.code === 'KeyX' || e.code === 'Enter') {
+                        e.preventDefault();
+                        this.attack();
+                    }
+                });
+
+                window.addEventListener('keyup', (e) => {
+                    this.keys[e.code] = false;
+                });
+
+                // Prevent default touch behaviors
+                document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+            }
+
+            loadLevel() {
+                if (this.level > this.levelData.length) {
+                    this.showVictory();
+                    return;
+                }
+
+                const levelConfig = this.levelData[this.level - 1];
+
+                // Clear existing enemies and platforms
+                this.enemiesContainer.innerHTML = '';
+                this.platformsContainer.innerHTML = '';
+                this.enemies = [];
+                this.platforms = [];
+
+                // Create platforms
+                levelConfig.platforms.forEach(platformData => {
+                    this.createPlatform(platformData);
+                });
+
+                // Create enemies
+                levelConfig.enemies.forEach(enemyData => {
+                    this.createEnemy(enemyData);
+                });
+
+                // Reset player position
+                this.playerX = 100;
+                this.playerY = 0;
+                this.updatePlayerPosition();
+            }
+
+            createPlatform(data) {
+                const platform = document.createElement('div');
+                platform.className = 'platform';
+                platform.style.left = data.x + 'px';
+                platform.style.bottom = data.y + 'px';
+                platform.style.width = data.width + 'px';
+                platform.style.height = data.height + 'px';
+
+                this.platformsContainer.appendChild(platform);
+                this.platforms.push({
+                    x: data.x,
+                    y: data.y,
+                    width: data.width,
+                    height: data.height,
+                    element: platform
+                });
+            }
+
+            createEnemy(data) {
+                const enemy = document.createElement('div');
+                enemy.className = `enemy ${data.type}`;
+                enemy.style.left = data.x + 'px';
+                enemy.style.bottom = data.y + 'px';
+
+                // Configurar sprite inicial del enemigo
+                if (this.enemyFrames[data.type] && this.enemyFrames[data.type].length > 0) {
+                    enemy.style.backgroundImage = `url(${this.enemyFrames[data.type][0]})`;
+                }
+
+                this.enemiesContainer.appendChild(enemy);
+
+                const enemyObj = {
+                    type: data.type,
+                    x: data.x,
+                    y: data.y,
+                    hp: data.hp,
+                    maxHp: data.hp,
+                    element: enemy,
+                    lastHit: 0,
+                    currentFrame: 0,
+                    lastFrameTime: 0,
+                    frameInterval: this.getEnemyFrameInterval(data.type),
+                    isAttacking: false,
+                    attackFrameIndex: 0,
+                    lastAttackTime: 0,
+                    attackCooldown: this.getEnemyAttackCooldown(data.type)
+                };
+
+                this.enemies.push(enemyObj);
+            }
+
+            getEnemyFrameInterval(type) {
+                const intervals = {
+                    alcalde: 150,
+                    pierna: 80,  // Más rápido
+                    koba: 200,   // Más lento
+                    vaquita: 120
+                };
+                return intervals[type] || 100;
+            }
+
+            getEnemyAttackCooldown(type) {
+                const cooldowns = {
+                    alcalde: 1500,  // ← Ahora ataca cada 1.5 segundos
+                    pierna: 1000,   // ← Cada 1 segundo (muy agresivo)
+                    koba: 2000,     // ← Cada 2 segundos  
+                    vaquita: 1200   // ← Cada 1.2 segundos
+                };
+                return cooldowns[type] || 3000;
+            }
+
+            animateEnemies() {
+                const now = Date.now();
+
+                this.enemies.forEach(enemy => {
+                    if (enemy.hp <= 0) return;
+
+                    // Verificar si debe atacar
+                    const distanceToPlayer = Math.abs(enemy.x - this.playerX);
+                    const shouldAttack = distanceToPlayer < 120 &&
+                        now - enemy.lastAttackTime > enemy.attackCooldown &&
+                        !enemy.isAttacking;
+
+                    if (shouldAttack) {
+                        this.triggerEnemyAttack(enemy);
+                    }
+
+                    // Animar frames
+                    if (now - enemy.lastFrameTime > enemy.frameInterval) {
+                        if (enemy.isAttacking) {
+                            this.updateEnemyAttackFrame(enemy);
+                        } else {
+                            this.updateEnemyIdleFrame(enemy);
+                        }
+                        enemy.lastFrameTime = now;
+                    }
+                });
+            }
+
+            triggerEnemyAttack(enemy) {
+                enemy.isAttacking = true;
+                enemy.attackFrameIndex = 0;
+                enemy.lastAttackTime = Date.now();
+                enemy.element.classList.add('attacking');
+
+                // Verificar si golpea al jugador
+                const distance = Math.abs(enemy.x - this.playerX);
+                if (distance < 80) {
+                    this.damagePlayer(20);
+                }
+
+                // Terminar ataque después de la animación
+                setTimeout(() => {
+                    enemy.isAttacking = false;
+                    enemy.element.classList.remove('attacking');
+                    // Volver al frame idle
+                    if (this.enemyFrames[enemy.type] && this.enemyFrames[enemy.type].length > 0) {
+                        enemy.element.style.backgroundImage = `url(${this.enemyFrames[enemy.type][0]})`;
+                    }
+                }, 400);
+            }
+
+            updateEnemyAttackFrame(enemy) {
+                const attackFrames = this.enemyAttackFrames[enemy.type];
+                if (attackFrames && attackFrames.length > 0) {
+                    enemy.attackFrameIndex = (enemy.attackFrameIndex + 1) % attackFrames.length;
+                    enemy.element.style.backgroundImage = `url(${attackFrames[enemy.attackFrameIndex]})`;
+                }
+            }
+
+            updateEnemyIdleFrame(enemy) {
+                const idleFrames = this.enemyFrames[enemy.type];
+                if (idleFrames && idleFrames.length > 0) {
+                    enemy.currentFrame = (enemy.currentFrame + 1) % idleFrames.length;
+                    enemy.element.style.backgroundImage = `url(${idleFrames[enemy.currentFrame]})`;
+                }
+            }
+
+            damagePlayer(damage) {
+                this.health = Math.max(0, this.health - damage);
+
+                // Efecto visual de daño
+                this.player.style.filter = 'hue-rotate(0deg) brightness(2)';
+                setTimeout(() => {
+                    this.player.style.filter = 'none';
+                }, 200);
+
+                if (this.health <= 0) {
+                    this.gameOver();
+                }
+            }
+
+            gameOver() {
+                const gameOver = document.createElement('div');
+                gameOver.className = 'level-complete';
+                gameOver.innerHTML = `
+                    <h2>💀 GAME OVER 💀</h2>
+                    <p>Shuls ha sido derrotado...</p>
+                    <p>Puntuación final: ${this.score}</p>
+                    <button class="btn btn-primary mt-3" onclick="location.reload()">Intentar de Nuevo</button>
+                `;
+                document.body.appendChild(gameOver);
+            }
+
+            jump() {
+                if (this.isOnGround && !this.isJumping) {
+                    this.playerVelocityY = this.jumpPower;
+                    this.isJumping = true;
+                    this.isOnGround = false;
+                    this.player.classList.add('jumping');
+
+                    setTimeout(() => {
+                        this.player.classList.remove('jumping');
+                    }, 600);
+                }
+            }
+
+            attack() {
+                if (this.energy < 20) return;
+
+                this.energy -= 20;
+                this.player.classList.add('attacking');
+
+                // Create Wuaaa effect
+                const effect = document.createElement('div');
+                effect.className = 'wuaaa-effect';
+                effect.style.left = (this.playerX - 25) + 'px';
+                effect.style.bottom = (this.playerY + 30) + 'px';
+                this.canvas.appendChild(effect);
+
+                // Check for enemy collisions
+                this.enemies.forEach(enemy => {
+                    if (enemy.hp > 0) {
+                        const distance = Math.abs(enemy.x - this.playerX);
+                        if (distance < 100 && Date.now() - enemy.lastHit > 500) {
+                            this.damageEnemy(enemy, 1);
+                            enemy.lastHit = Date.now();
+                        }
+                    }
+                });
+
+                setTimeout(() => {
+                    this.player.classList.remove('attacking');
+                    if (this.canvas.contains(effect)) {
+                        this.canvas.removeChild(effect);
+                    }
+                }, 1000);
+            }
+
+            damageEnemy(enemy, damage) {
+                enemy.hp -= damage;
+
+                // Show floating damage
+                const floatingDamage = document.createElement('div');
+                floatingDamage.className = 'floating-damage';
+                floatingDamage.textContent = '¡WUAAA!';
+                floatingDamage.style.left = enemy.x + 'px';
+                floatingDamage.style.bottom = (enemy.y + 60) + 'px';
+                this.canvas.appendChild(floatingDamage);
+
+                setTimeout(() => {
+                    if (this.canvas.contains(floatingDamage)) {
+                        this.canvas.removeChild(floatingDamage);
+                    }
+                }, 1500);
+
+                if (enemy.hp <= 0) {
+                    this.defeatEnemy(enemy);
+                }
+            }
+
+            defeatEnemy(enemy) {
+                enemy.element.classList.add('defeated');
+                this.score += 100;
+
+                setTimeout(() => {
+                    if (this.enemiesContainer.contains(enemy.element)) {
+                        this.enemiesContainer.removeChild(enemy.element);
+                    }
+                }, 500);
+
+                // Check if all enemies defeated
+                const aliveEnemies = this.enemies.filter(e => e.hp > 0);
+                if (aliveEnemies.length === 0) {
+                    setTimeout(() => this.nextLevel(), 1000);
+                }
+            }
+
+            nextLevel() {
+                this.level++;
+                this.health = Math.min(this.maxHealth, this.health + 20);
+                this.energy = this.maxEnergy;
+
+                if (this.level <= this.levelData.length) {
+                    this.showLevelComplete();
+                    setTimeout(() => {
+                        this.loadLevel();
+                        this.showLevelInfo();
+                    }, 2000);
+                } else {
+                    this.showVictory();
+                }
+            }
+
+            updatePhysics() {
+                // Handle movement
+                if (this.keys['ArrowLeft'] || this.keys['KeyA']) {
+                    this.playerVelocityX = -this.moveSpeed;
+                    this.facingRight = false;
+                } else if (this.keys['ArrowRight'] || this.keys['KeyD']) {
+                    this.playerVelocityX = this.moveSpeed;
+                    this.facingRight = true;
+                } else {
+                    this.playerVelocityX *= 0.8; // Friction
+                }
+
+                // Apply gravity
+                if (!this.isOnGround) {
+                    this.playerVelocityY += this.gravity;
+                }
+
+                // Update position
+                this.playerX += this.playerVelocityX;
+                this.playerY += this.playerVelocityY;
+
+                // Check ground collision
+                if (this.playerY <= 0) {
+                    this.playerY = 0;
+                    this.playerVelocityY = 0;
+                    this.isOnGround = true;
+                    this.isJumping = false;
+                }
+
+                // Check platform collisions
+                this.platforms.forEach(platform => {
+                    if (this.playerX + 25 > platform.x &&
+                        this.playerX - 25 < platform.x + platform.width &&
+                        this.playerY <= platform.y + platform.height + 10 &&
+                        this.playerY >= platform.y - 10 &&
+                        this.playerVelocityY >= 0) {
+
+                        this.playerY = platform.y + platform.height;
+                        this.playerVelocityY = 0;
+                        this.isOnGround = true;
+                        this.isJumping = false;
+                    }
+                });
+
+                // Keep player in bounds
+                this.playerX = Math.max(25, Math.min(window.innerWidth - 25, this.playerX));
+
+                this.updatePlayerPosition();
+            }
+
+            updatePlayerPosition() {
+                this.player.style.left = this.playerX + 'px';
+                this.player.style.bottom = (this.playerY + this.groundLevel) + 'px';
+                this.player.style.transform = this.facingRight ? 'scaleX(1)' : 'scaleX(-1)';
+            }
+
+            regenerateEnergy() {
+                if (this.energy < this.maxEnergy) {
+                    this.energy = Math.min(this.maxEnergy, this.energy + 0.5);
+                }
+            }
+
+            updateDisplay() {
+                document.getElementById('healthFill').style.width = (this.health / this.maxHealth * 100) + '%';
+                document.getElementById('energyFill').style.width = (this.energy / this.maxEnergy * 100) + '%';
+                document.getElementById('levelDisplay').textContent = this.level;
+                document.getElementById('scoreDisplay').textContent = this.score;
+            }
+
+            animatePlayer() {
+                const now = Date.now();
+                const isMovingLeft = this.keys['ArrowLeft'] || this.keys['KeyA'];
+                const isMovingRight = this.keys['ArrowRight'] || this.keys['KeyD'];
+                const isMoving = isMovingLeft || isMovingRight;
+
+                if (isMoving) {
+                    if (now - this.lastFrameTime > this.frameInterval) {
+                        this.currentFrame = (this.currentFrame + 1) % this.runFrames.length;
+                        this.player.style.backgroundImage = `url(${this.runFrames[this.currentFrame]})`;
+                        this.lastFrameTime = now;
+                    }
+                } else {
+                    // si no se mueve, se queda en la primera imagen
+                    this.player.style.backgroundImage = `url(${this.runFrames[0]})`;
+                }
+            }
+
+            showLevelInfo() {
+                const levelInfo = document.createElement('div');
+                levelInfo.className = 'level-info';
+                levelInfo.innerHTML = `
+                    <h3>🌿 Nivel ${this.level} 🌿</h3>
+                    <p>¡Shuls debe derrotar a todos los enemigos!</p>
+                    <p><strong>"¡Wuaaa! ¡Protegeremos Mazamari!"</strong></p>
+                `;
+                document.body.appendChild(levelInfo);
+
+                setTimeout(() => {
+                    if (document.body.contains(levelInfo)) {
+                        document.body.removeChild(levelInfo);
+                    }
+                }, 3000);
+            }
+
+            showLevelComplete() {
+                const complete = document.createElement('div');
+                complete.className = 'level-complete';
+                complete.innerHTML = `
+                    <h3>🎉 ¡Nivel Completado! 🎉</h3>
+                    <p>¡Shuls dice: "¡Wuaaa! ¡Otro nivel conquistado!"</p>
+                    <p>Preparándose para el siguiente nivel...</p>
+                `;
+                document.body.appendChild(complete);
+
+                setTimeout(() => {
+                    if (document.body.contains(complete)) {
+                        document.body.removeChild(complete);
+                    }
+                }, 2000);
+            }
+
+            showVictory() {
+                const victory = document.createElement('div');
+                victory.className = 'level-complete';
+                victory.innerHTML = `
+                    <h2>🏆 ¡VICTORIA TOTAL! 🏆</h2>
+                    <p>¡Shuls ha protegido toda la selva de Mazamari!</p>
+                    <p><strong>"¡WUAAA! ¡La selva está a salvo!"</strong></p>
+                    <p>Puntuación final: ${this.score}</p>
+                    <button class="btn btn-primary mt-3" onclick="location.reload()">Jugar de Nuevo</button>
+                `;
+                document.body.appendChild(victory);
+            }
+
+            gameLoop() {
+                this.updatePhysics();
+                this.regenerateEnergy();
+                this.updateDisplay();
+                this.animatePlayer();
+                this.animateEnemies(); // Nueva función para animar enemigos
+
+                // Continue game loop
+                requestAnimationFrame(() => this.gameLoop());
+            }
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ShulsPlatformer();
+            
+            // Registrar Service Worker para PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then((registration) => {
+                            console.log('SW registrado: ', registration);
+                        })
+                        .catch((registrationError) => {
+                            console.log('SW registro falló: ', registrationError);
+                        });
+                });
+            }
+            
+            // Mostrar banner de instalación
+            let deferredPrompt;
+            const installButton = document.createElement('button');
+            installButton.className = 'btn btn-success install-btn';
+            installButton.innerHTML = '📱 Instalar App';
+            installButton.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                display: none;
+                padding: 10px 20px;
+                border-radius: 25px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            `;
+            
+            document.body.appendChild(installButton);
+            
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installButton.style.display = 'block';
+                
+                installButton.addEventListener('click', () => {
+                    installButton.style.display = 'none';
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('Usuario aceptó instalar la app');
+                        } else {
+                            console.log('Usuario rechazó instalar la app');
+                        }
+                        deferredPrompt = null;
+                    });
+                });
+            });
+            
+            window.addEventListener('appinstalled', () => {
+                installButton.style.display = 'none';
+                deferredPrompt = null;
+                console.log('PWA instalada exitosamente');
+            });
+        });
+    </script>
+
+
+
+    <button class="btn-flotante" onclick="abrirModal()">Invítame un café ☕!!</button>
+
+    <!-- Modal -->
+    <div id="modalApoyo" class="modal">
+        <div class="modal-content">
+            <span class="cerrar" onclick="cerrarModal()">&times;</span>
+            <h3>Apóyame con Yape o Plin 💖</h3>
+            <p><strong>Número:</strong> 927 564 707</p>
+            <p>Banco: Yape o Plin 📲</p>
+        </div>
+    </div>
+
+    <script>
+        function abrirModal() {
+            document.getElementById("modalApoyo").style.display = "flex";
+        }
+        function cerrarModal() {
+            document.getElementById("modalApoyo").style.display = "none";
+        }
+    </script>
+
+
+</body>
+
+</html>
