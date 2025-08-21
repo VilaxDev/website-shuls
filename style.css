@@ -3,14 +3,10 @@ body {
     padding: 0;
     background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #8fbc8f 100%);
     font-family: 'Comic Neue', sans-serif;
-    overflow: hidden;
+    font-style: normal;
 }
 
-@media (min-width: 1024px) {
-    body {
-        font-family: 'Comic Neue', cursive;
-    }
-}
+
 
 .game-canvas {
     position: relative;
@@ -430,6 +426,13 @@ body {
     font-weight: bold;
     font-family: monospace;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 1024px) {
+    body {
+        font-family: 'Comic Neue', sans-serif;
+        font-style: italic;
+    }
 }
 
 @media (max-width: 768px) {
