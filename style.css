@@ -2,8 +2,14 @@ body {
     margin: 0;
     padding: 0;
     background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #8fbc8f 100%);
-    font-family: 'Comic Neue';
+    font-family: 'Comic Neue', sans-serif;
     overflow: hidden;
+}
+
+@media (min-width: 1024px) {
+    body {
+        font-family: 'Comic Neue', cursive;
+    }
 }
 
 .game-canvas {
